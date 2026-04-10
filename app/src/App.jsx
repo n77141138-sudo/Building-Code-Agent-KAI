@@ -146,7 +146,7 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <h1 className="title">法規即時檢索 </h1>
+        <h1 className="title">法規即時檢索_報告專用，大神手下留情別盜我api，感恩 </h1>
         <p className="subtitle">查不到，不是沒有，是我還沒用完</p>
       </header>
 
