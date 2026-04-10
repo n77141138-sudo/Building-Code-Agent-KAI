@@ -30,9 +30,9 @@ npm run dev
 **步驟 4：看到以下訊息後，開啟瀏覽器輸入網址**
 ```
 VITE v8.x.x  ready in xxx ms
-➜  Local:   http://localhost:5173/
+➜  Local:   http://127.0.0.1:9000/
 ```
-👉 瀏覽器網址：**http://localhost:5173/**
+👉 瀏覽器網址：**http://127.0.0.1:9000/**
 
 > 💡 伺服器會持續運行直到您關閉 Terminal 視窗為止
 

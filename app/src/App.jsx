@@ -53,13 +53,13 @@ function App() {
   const analyzeInput = () => {
     if (!inputText.trim()) return;
     setIsAnalyzing(true);
-    
+
     setTimeout(() => {
       let foundMatches = [];
       let totalWeight = 0;
       let categoriesMap = {};
       let flatActiveWords = [];
-      
+
       keywordDatabase.forEach(item => {
         let matchedWords = [];
         item.words.forEach(word => {
@@ -71,18 +71,18 @@ function App() {
 
         if (matchedWords.length > 0) {
           const compoundWeight = item.weight * (1 + (matchedWords.length - 1) * 0.2);
-          
+
           if (!categoriesMap[item.category]) {
-            categoriesMap[item.category] = { 
-              weight: 0, 
-              matchedWords: [], 
+            categoriesMap[item.category] = {
+              weight: 0,
+              matchedWords: [],
               color: categoryConfig[item.category].color,
               icon: categoryConfig[item.category].icon
             };
           }
           categoriesMap[item.category].weight += compoundWeight;
           matchedWords.forEach(w => {
-            if(!categoriesMap[item.category].matchedWords.includes(w)) {
+            if (!categoriesMap[item.category].matchedWords.includes(w)) {
               categoriesMap[item.category].matchedWords.push(w);
             }
           });
@@ -117,20 +117,20 @@ function App() {
         let triggers = [];
 
         flatActiveWords.forEach(activeTerm => {
-           // Simple substring matching in the real law text
-           const regex = new RegExp(activeTerm.word, 'gi');
-           const matches = law.content.match(regex) || (law.article.includes(activeTerm.word) ? [1] : null);
-           
-           if (matches) {
-              // Logarithmic weight calculation based on frequency
-              const count = matches.length;
-              score += activeTerm.weight * (1 + Math.log(count));
-              if(!triggers.includes(activeTerm.word)) triggers.push(activeTerm.word);
-           }
+          // Simple substring matching in the real law text
+          const regex = new RegExp(activeTerm.word, 'gi');
+          const matches = law.content.match(regex) || (law.article.includes(activeTerm.word) ? [1] : null);
+
+          if (matches) {
+            // Logarithmic weight calculation based on frequency
+            const count = matches.length;
+            score += activeTerm.weight * (1 + Math.log(count));
+            if (!triggers.includes(activeTerm.word)) triggers.push(activeTerm.word);
+          }
         });
 
-        return { 
-          ...law, 
+        return {
+          ...law,
           score: Math.round(score * 10) / 10,
           triggers
         };
@@ -146,8 +146,8 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <h1 className="title">建築法規 MCP 即時檢索解析 </h1>
-        <p className="subtitle">已串接《建築法》真質法條庫，利用權重演算法直接導出完整法條</p>
+        <h1 className="title">法規即時檢索 </h1>
+        <p className="subtitle">查不到，不是沒有，是我還沒用完</p>
       </header>
 
       <div className="glass-panel input-section">
@@ -156,13 +156,13 @@ function App() {
           請輸入描述或指令...
         </label>
 
-        <textarea 
-          className="styled-textarea" 
-          placeholder="例如：老屋頂層加蓋增建公寓，需要評估防火、結構與室內裝修的相關法規..."
+        <textarea
+          className="styled-textarea"
+          placeholder="帥哥美女指令請打這，怕畫面太亂看不到，所以提醒你"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
         />
-        
+
         <button className="styled-button" onClick={analyzeInput} disabled={isAnalyzing || !inputText.trim()}>
           {isAnalyzing ? (
             <>
@@ -180,37 +180,37 @@ function App() {
 
       <div className="results-container">
         {/* Keywords Category Panel */}
-        <div className="glass-panel" style={{alignSelf: 'start'}}>
+        <div className="glass-panel" style={{ alignSelf: 'start' }}>
           <h2 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
             <Scale size={20} color="#f59e0b" />
             權重解析與領域傾向
           </h2>
-          
+
           <div className="keywords-list">
             {extractedCategories.length === 0 && !isAnalyzing && (
               <div className="empty-state" style={{ padding: '2rem 0' }}>
                 <Layers size={36} className="empty-icon" />
-                <span style={{color: '#64748b', fontSize: '0.9rem'}}>系統將彙整輸入詞句的傾向</span>
+                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>系統將彙整輸入詞句的傾向</span>
               </div>
             )}
-            
+
             {extractedCategories.map((cat, idx) => (
               <div className="category-item" key={idx}>
                 <div className="category-header">
-                  <div className="cat-title" style={{color: cat.color}}>
+                  <div className="cat-title" style={{ color: cat.color }}>
                     {cat.icon}
                     <span className="cat-name">{cat.name}</span>
                   </div>
-                  <span className="category-weight" style={{color: cat.color}}>{cat.normalized}%</span>
+                  <span className="category-weight" style={{ color: cat.color }}>{cat.normalized}%</span>
                 </div>
-                
-                <div className="weight-bar-bg" style={{height: '6px', marginBottom: '0.75rem'}}>
+
+                <div className="weight-bar-bg" style={{ height: '6px', marginBottom: '0.75rem' }}>
                   <div className="weight-bar-fill" style={{ width: `${cat.normalized}%`, background: cat.color }}></div>
                 </div>
-                
+
                 <div className="matched-words-chips">
                   {cat.words.map((word, widx) => (
-                    <span key={widx} className="word-chip" style={{backgroundColor: `${cat.color}20`, color: cat.color, border: `1px solid ${cat.color}40`}}>
+                    <span key={widx} className="word-chip" style={{ backgroundColor: `${cat.color}20`, color: cat.color, border: `1px solid ${cat.color}40` }}>
                       {word}
                     </span>
                   ))}
@@ -231,30 +231,30 @@ function App() {
             {suggestedArticles.length === 0 && !isAnalyzing && (
               <div className="empty-state" style={{ padding: '2rem 0' }}>
                 <CheckCircle size={36} className="empty-icon" />
-                <span style={{color: '#64748b', fontSize: '0.9rem'}}>從 123 條建築法中，將即時印出真實條文內容！</span>
+                <span style={{ color: '#64748b', fontSize: '0.9rem' }}>從 123 條建築法中，將即時印出真實條文內容！</span>
               </div>
             )}
 
             {suggestedArticles.map((law, idx) => (
               <div className="regulation-card" key={idx}>
                 <div className="card-header">
-                  <div style={{flex: 1}}>
-                    <h3 className="card-title" style={{ fontSize: '1.15rem'}}>{law.article}</h3>
+                  <div style={{ flex: 1 }}>
+                    <h3 className="card-title" style={{ fontSize: '1.15rem' }}>{law.article}</h3>
                   </div>
                   <div className="match-score">
                     分數: {law.score}
                   </div>
                 </div>
-                
+
                 {/* Real content from the moj.gov.tw website */}
                 <p className="regulation-desc" style={{ whiteSpace: 'pre-wrap', color: '#f8fafc' }}>
                   {law.content}
                 </p>
-                
-                <div className="matched-tags" style={{marginTop: '0.8rem'}}>
+
+                <div className="matched-tags" style={{ marginTop: '0.8rem' }}>
                   <span style={{ fontSize: '0.75rem', color: '#ef4444', display: 'flex', alignItems: 'center', marginRight: '0.5rem' }}>🎯 命中關鍵字：</span>
                   {law.triggers.map((kw, tidx) => (
-                    <span className="tag" style={{background: 'rgba(239,68,68,0.1)', color: '#fca5a5', borderColor: '#ef4444'}} key={tidx}>#{kw}</span>
+                    <span className="tag" style={{ background: 'rgba(239,68,68,0.1)', color: '#fca5a5', borderColor: '#ef4444' }} key={tidx}>#{kw}</span>
                   ))}
                 </div>
               </div>
