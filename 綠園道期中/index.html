@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="台南綠園道民意分析平台 - 即時監測社群媒體輿情、分析多元利害關係人意見，提供政策決策依據。"/>
+  <title>台南綠園道民意分析平台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="brand-icon">🌿</div>
+      <div class="brand-text">
+        <span class="brand-title">台南綠園道</span>
+        <span class="brand-sub">民意分析平台</span>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a class="nav-link active" onclick="showSection('dashboard',this)">即時看板</a>
+      <a class="nav-link" onclick="showSection('analysis',this)">輿情分析</a>
+      <a class="nav-link" onclick="showSection('stakeholders',this)">利害關係人</a>
+      <a class="nav-link admin-link" onclick="showSection('admin',this)">🔐 後台管理</a>
+    </div>
+    <div class="nav-right">
+      <div class="next-update-badge">🔄 下次更新：<span id="countdown">5:00</span></div>
+      <div class="nav-status"><span class="live-dot"></span><span class="live-text">LIVE</span></div>
+    </div>
+  </nav>
+
+  <!-- COMPACT HERO -->
+  <section class="hero-compact">
+    <div class="hero-bg-animation"></div>
+    <div class="hero-compact-inner">
+      <div class="hero-left">
+        <div class="hero-badge">📡 每 5 分鐘自動更新</div>
+        <h1 class="hero-title">台南綠園道 <span class="hero-accent">民意分析平台</span></h1>
+        <p class="hero-desc">整合 PTT・Dcard・Facebook・新聞媒體，即時分析公眾輿情，提供空間規劃決策依據。</p>
+      </div>
+      <div class="hero-stats-row">
+        <div class="stat-card"><span class="stat-num" id="hero-total">0</span><span class="stat-label">蒐集意見數</span></div>
+        <div class="stat-card pos"><span class="stat-num" id="hero-positive">0%</span><span class="stat-label">正向情緒</span></div>
+        <div class="stat-card neg"><span class="stat-num" id="hero-negative">0%</span><span class="stat-label">反對情緒</span></div>
+        <div class="stat-card"><span class="stat-num" id="hero-sources">5</span><span class="stat-label">監測來源</span></div>
+        <div class="stat-card"><span class="stat-num" id="hero-update">--</span><span class="stat-label">最後更新</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker-bar">
+    <span class="ticker-label">📢 即時輿情</span>
+    <div class="ticker-track">
+      <div class="ticker-content" id="ticker-content">載入中...</div>
+    </div>
+    <button class="btn-refresh ticker-refresh" onclick="refreshData()">🔄 刷新</button>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main-container">
+
+    <!-- DASHBOARD -->
+    <section class="content-section active" id="section-dashboard">
+      <div class="section-header">
+        <h2>即時看板</h2>
+        <select class="time-select" id="time-range" onchange="updateTimeRange()">
+          <option value="1h">最近 1 小時</option>
+          <option value="24h" selected>最近 24 小時</option>
+          <option value="7d">最近 7 天</option>
+          <option value="30d">最近 30 天</option>
+        </select>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-grid">
+        <div class="kpi-card sentiment-pos">
+          <div class="kpi-icon">😊</div>
+          <div class="kpi-info"><span class="kpi-value" id="kpi-positive">--</span><span class="kpi-label">正面聲量</span></div>
+          <div class="kpi-trend up" id="kpi-positive-trend">↑ --</div>
+        </div>
+        <div class="kpi-card sentiment-neg">
+          <div class="kpi-icon">😠</div>
+          <div class="kpi-info"><span class="kpi-value" id="kpi-negative">--</span><span class="kpi-label">負面聲量</span></div>
+          <div class="kpi-trend down" id="kpi-negative-trend">↓ --</div>
+        </div>
+        <div class="kpi-card sentiment-neu">
+          <div class="kpi-icon">😐</div>
+          <div class="kpi-info"><span class="kpi-value" id="kpi-neutral">--</span><span class="kpi-label">中性聲量</span></div>
+          <div class="kpi-trend" id="kpi-neutral-trend">→ --</div>
+        </div>
+        <div class="kpi-card total">
+          <div class="kpi-icon">📊</div>
+          <div class="kpi-info"><span class="kpi-value" id="kpi-total">--</span><span class="kpi-label">總聲量</span></div>
+          <div class="kpi-trend up" id="kpi-total-trend">↑ --</div>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Grid: 3 columns -->
+      <div class="dash-grid">
+        <!-- Left col: Trend chart + Source Bar -->
+        <div class="dash-col-wide">
+          <div class="chart-card">
+            <div class="chart-header">
+              <h3>聲量趨勢（24小時）</h3>
+              <div class="chart-legend">
+                <span class="legend-dot green"></span>正面
+                <span class="legend-dot red"></span>負面
+                <span class="legend-dot gray"></span>中性
+              </div>
+            </div>
+            <div class="chart-wrap h-140"><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="chart-card" style="margin-top:0.75rem">
+            <div class="chart-header"><h3>來源平台聲量</h3></div>
+            <div class="chart-wrap h-120"><canvas id="sourceBar"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Middle col: Donut + Radar -->
+        <div class="dash-col">
+          <div class="chart-card">
+            <div class="chart-header"><h3>情緒分佈</h3></div>
+            <div class="chart-wrap h-140"><canvas id="sentimentDonut"></canvas></div>
+          </div>
+          <div class="chart-card" style="margin-top:0.75rem">
+            <div class="chart-header"><h3>分析維度雷達</h3></div>
+            <div class="chart-wrap h-140"><canvas id="dimensionRadar"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Right col: Topics + Feed -->
+        <div class="dash-col">
+          <div class="chart-card">
+            <div class="chart-header"><h3>議題熱度排行</h3></div>
+            <div class="topic-list" id="topic-list">載入中...</div>
+          </div>
+          <div class="chart-card live-feed-card" style="margin-top:0.75rem">
+            <div class="feed-header">
+              <h3>🔴 即時串流</h3>
+              <div class="feed-filter">
+                <button class="filter-btn active" onclick="filterFeed('all',this)">全</button>
+                <button class="filter-btn" onclick="filterFeed('positive',this)">正</button>
+                <button class="filter-btn" onclick="filterFeed('negative',this)">負</button>
+                <button class="filter-btn" onclick="filterFeed('neutral',this)">中</button>
+              </div>
+            </div>
+            <div class="feed-container" id="live-feed"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ANALYSIS -->
+    <section class="content-section" id="section-analysis">
+      <div class="section-header"><h2>深度輿情分析</h2></div>
+      <div class="analysis-grid">
+        <div class="analysis-card full-width">
+          <h3>議題矩陣分析</h3>
+          <p class="card-desc">依「支持程度」與「爭議程度」分佈各項議題</p>
+          <div class="matrix-container" id="issue-matrix">
+            <div class="matrix-axis-y">高支持</div>
+            <div class="matrix-axis-y bottom">低支持</div>
+            <div class="matrix-axis-x">低爭議</div>
+            <div class="matrix-axis-x right">高爭議</div>
+            <div class="matrix-quadrant q1"><span class="q-label">優先推動</span></div>
+            <div class="matrix-quadrant q2"><span class="q-label">重點溝通</span></div>
+            <div class="matrix-quadrant q3"><span class="q-label">低優先</span></div>
+            <div class="matrix-quadrant q4"><span class="q-label">審慎評估</span></div>
+          </div>
+        </div>
+        <div class="analysis-card">
+          <h3>關鍵詞雲</h3>
+          <div class="word-cloud" id="word-cloud"></div>
+        </div>
+        <div class="analysis-card">
+          <h3>民意 → 設計策略</h3>
+          <div class="strategy-table" id="strategy-table"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAKEHOLDERS -->
+    <section class="content-section" id="section-stakeholders">
+      <div class="section-header"><h2>利害關係人分析</h2></div>
+      <div class="stakeholder-grid" id="stakeholder-grid"></div>
+      <div class="dash-grid" style="margin-top:1rem">
+        <div class="dash-col-wide">
+          <div class="chart-card">
+            <div class="chart-header"><h3>各族群關注議題比較</h3></div>
+            <div class="chart-wrap h-180"><canvas id="stakeholderBar"></canvas></div>
+          </div>
+        </div>
+        <div class="dash-col">
+          <div class="chart-card">
+            <div class="chart-header"><h3>族群聲量佔比</h3></div>
+            <div class="chart-wrap h-180"><canvas id="stakeholderPie"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="content-section" id="section-admin">
+      <div class="admin-login" id="admin-login">
+        <div class="login-card">
+          <div class="login-icon">🔐</div>
+          <h2>後台管理登入</h2>
+          <p>請輸入管理員帳密以進入後台</p>
+          <div class="form-group"><input type="text" id="admin-user" placeholder="帳號" class="form-input"/></div>
+          <div class="form-group"><input type="password" id="admin-pass" placeholder="密碼" class="form-input"/></div>
+          <button class="btn-primary" onclick="adminLogin()">登入</button>
+          <p class="login-hint">（測試帳號：admin / 密碼：1234）</p>
+        </div>
+      </div>
+
+      <div class="admin-panel" id="admin-panel" style="display:none">
+        <div class="admin-topbar">
+          <h2>🛠️ 後台管理面板</h2>
+          <button class="btn-danger" onclick="adminLogout()">登出</button>
+        </div>
+
+        <!-- Admin KPI -->
+        <div class="kpi-grid">
+          <div class="kpi-card total"><div class="kpi-icon">🗓️</div><div class="kpi-info"><span class="kpi-value" id="adm-today">0</span><span class="kpi-label">今日新增意見</span></div></div>
+          <div class="kpi-card sentiment-pos"><div class="kpi-icon">📡</div><div class="kpi-info"><span class="kpi-value" id="adm-sources">5</span><span class="kpi-label">監測來源數</span></div></div>
+          <div class="kpi-card sentiment-neg"><div class="kpi-icon">⚠️</div><div class="kpi-info"><span class="kpi-value" id="adm-alerts">0</span><span class="kpi-label">異常警示</span></div></div>
+          <div class="kpi-card sentiment-neu"><div class="kpi-icon">🔄</div><div class="kpi-info"><span class="kpi-value" id="adm-last">--</span><span class="kpi-label">上次更新</span></div></div>
+        </div>
+
+        <!-- ★ 贊成 / 反對 分數分析 -->
+        <div class="score-section">
+          <div class="score-card pro">
+            <div class="score-header">
+              <span class="score-icon">👍</span>
+              <span class="score-label">贊成綠園道計畫</span>
+            </div>
+            <div class="score-num" id="score-pro">--</div>
+            <div class="score-pct-bar"><div class="score-fill pro-fill" id="score-pro-bar" style="width:0%"></div></div>
+            <div class="score-sub" id="score-pro-sub">-- 則意見支持</div>
+          </div>
+          <div class="score-vs">VS</div>
+          <div class="score-card con">
+            <div class="score-header">
+              <span class="score-icon">👎</span>
+              <span class="score-label">反對綠園道計畫</span>
+            </div>
+            <div class="score-num" id="score-con">--</div>
+            <div class="score-pct-bar"><div class="score-fill con-fill" id="score-con-bar" style="width:0%"></div></div>
+            <div class="score-sub" id="score-con-sub">-- 則意見反對</div>
+          </div>
+        </div>
+
+        <!-- 贊成/反對 By Stakeholder -->
+        <div class="chart-card" style="margin-bottom:1rem">
+          <div class="chart-header"><h3>各族群 贊成 / 反對 比例</h3></div>
+          <div class="chart-wrap h-140"><canvas id="proConChart"></canvas></div>
+        </div>
+
+        <!-- Admin Charts -->
+        <div class="dash-grid">
+          <div class="dash-col-wide">
+            <div class="chart-card">
+              <div class="chart-header"><h3>7日聲量趨勢</h3></div>
+          <div class="chart-wrap h-140"><canvas id="adminTrendChart"></canvas></div>
+            </div>
+          </div>
+          <div class="dash-col">
+            <div class="chart-card">
+              <div class="chart-header"><h3>各來源佔比</h3></div>
+          <div class="chart-wrap h-140"><canvas id="adminSourcePie"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="chart-card" style="margin-top:1rem">
+          <div class="chart-header">
+            <h3>原始資料瀏覽</h3>
+            <div style="display:flex;gap:0.5rem">
+              <input type="text" class="form-input" placeholder="搜尋關鍵字..." id="table-search" oninput="filterTable()" style="width:180px;padding:0.4rem 0.8rem;font-size:0.82rem"/>
+              <button class="btn-refresh" onclick="exportCSV()">⬇️ 匯出 CSV</button>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="data-table">
+              <thead><tr><th>時間</th><th>來源</th><th>利害關係人</th><th>內容摘要</th><th>情緒</th><th>議題</th><th>聲量</th></tr></thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Settings -->
+        <div class="chart-card" style="margin-top:1rem">
+          <div class="chart-header"><h3>⚙️ 監測設定</h3></div>
+          <div class="settings-grid">
+            <div class="setting-item">
+              <label>關鍵字監測</label>
+              <div class="keyword-tags" id="keyword-tags">
+                <span class="tag">綠園道<button onclick="removeTag(this)">×</button></span>
+                <span class="tag">台南步道<button onclick="removeTag(this)">×</button></span>
+                <span class="tag">中山路<button onclick="removeTag(this)">×</button></span>
+                <span class="tag">停車問題<button onclick="removeTag(this)">×</button></span>
+              </div>
+              <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+                <input type="text" class="form-input" id="new-keyword" placeholder="新增關鍵字..." style="padding:0.4rem 0.8rem;font-size:0.82rem"/>
+                <button class="btn-refresh" onclick="addKeyword()">+ 新增</button>
+              </div>
+            </div>
+            <div class="setting-item">
+              <label>監測來源</label>
+              <div class="source-toggles">
+                <label class="toggle-label"><input type="checkbox" checked/>PTT</label>
+                <label class="toggle-label"><input type="checkbox" checked/>Dcard</label>
+                <label class="toggle-label"><input type="checkbox" checked/>Facebook</label>
+                <label class="toggle-label"><input type="checkbox" checked/>新聞媒體</label>
+                <label class="toggle-label"><input type="checkbox" checked/>YouTube</label>
+              </div>
+            </div>
+            <div class="setting-item">
+              <label>自動刷新頻率</label>
+              <select class="form-input" id="refresh-rate">
+                <option value="60">每 1 分鐘</option>
+                <option value="300" selected>每 5 分鐘</option>
+                <option value="600">每 10 分鐘</option>
+                <option value="0">手動刷新</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label>警示閾值（負面聲量 %）</label>
+              <input type="range" min="10" max="80" value="40" class="range-input" id="alert-threshold" oninput="document.getElementById('threshold-val').textContent=this.value+'%'"/>
+              <span id="threshold-val">40%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <div class="loading-overlay" id="loading">
+    <div class="loading-spinner"></div>
+    <p>載入資料中...</p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

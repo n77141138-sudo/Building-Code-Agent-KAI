@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <title>後台管理 - 台南綠園道</title>
+  <style>
+    body { margin:0; background:#0a0f1a; display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:'Noto Sans TC',sans-serif; }
+    .splash { text-align:center; color:#e2e8f0; }
+    .icon { font-size:4rem; margin-bottom:1rem; animation:bounce 1s ease infinite alternate; }
+    @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-10px)} }
+    h1 { font-size:1.5rem; color:#4ade80; margin-bottom:0.5rem; }
+    p { color:#64748b; font-size:0.9rem; }
+    .bar { width:200px; height:4px; background:rgba(74,222,128,0.15); border-radius:2px; margin:1.5rem auto 0; overflow:hidden; }
+    .fill { height:100%; background:linear-gradient(90deg,#4ade80,#2dd4bf); border-radius:2px; animation:load 1.5s ease forwards; }
+    @keyframes load { from{width:0} to{width:100%} }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="icon">🔐</div>
+    <h1>後台管理面板</h1>
+    <p>正在進入管理介面，請稍候...</p>
+    <div class="bar"><div class="fill"></div></div>
+  </div>
+  <script>
+    setTimeout(() => {
+      // Open main app and trigger admin section
+      const url = 'index.html#admin';
+      window.location.href = url;
+      // After redirect, simulate clicking admin nav
+      sessionStorage.setItem('openAdmin', '1');
+    }, 1600);
+  </script>
+</body>
+</html>
